@@ -34,18 +34,31 @@ class _LoanFormState extends State<LoanForm> {
     if (_formKey.currentState!.validate()) {
       final result = await _apiService.requestLoanDecision(
           _nationalId, _loanAmount, _loanPeriod);
+      print("Backend Response: $result");
       setState(() {
+        // Store results from back-end.
         int tempAmount = int.parse(result['loanAmount'].toString());
         int tempPeriod = int.parse(result['loanPeriod'].toString());
 
-        if (tempAmount <= _loanAmount || tempPeriod > _loanPeriod) {
-          _loanAmountResult = int.parse(result['loanAmount'].toString());
-          _loanPeriodResult = int.parse(result['loanPeriod'].toString());
+        if (tempAmount >0 && tempPeriod > 0) {
+          _loanAmountResult = tempAmount;
+          _loanPeriodResult = tempPeriod;
+          _errorMessage = '';
         } else {
-          _loanAmountResult = _loanAmount;
-          _loanPeriodResult = _loanPeriod;
+          _loanAmountResult = 0;
+          _loanPeriodResult = 0;
+
+          // Checking if the errorMessages are about age restrictions and if so, displaying the messages
+          String errorMessage = result['errorMessage'].toString().toLowerCase();
+          print("Error Message: $errorMessage");
+          if (errorMessage.contains("age_restriction:underage")){
+            _errorMessage = "You are underage. Loan application cannot be approved.";
+          } else if (errorMessage.contains("age_restriction:overage")) {
+            _errorMessage = "You are over the eligible age limit. Loan application cannot be approved.";
+          } else {
+            _errorMessage = errorMessage;
+          }
         }
-        _errorMessage = result['errorMessage'].toString();
       });
     } else {
       _loanAmountResult = 0;
@@ -133,7 +146,7 @@ class _LoanFormState extends State<LoanForm> {
                   Slider.adaptive(
                     value: _loanPeriod.toDouble(),
                     min: 12,
-                    max: 60,
+                    max: 48,
                     divisions: 40,
                     label: '$_loanPeriod months',
                     activeColor: AppColors.secondaryColor,
@@ -152,7 +165,7 @@ class _LoanFormState extends State<LoanForm> {
                           padding: EdgeInsets.only(left: 12),
                           child: Align(
                               alignment: Alignment.centerLeft,
-                              child: Text('6 months')),
+                              child: Text('12 months')),
                         ),
                       ),
                       Expanded(
@@ -160,7 +173,7 @@ class _LoanFormState extends State<LoanForm> {
                           padding: EdgeInsets.only(right: 12),
                           child: Align(
                             alignment: Alignment.centerRight,
-                            child: Text('60 months'),
+                            child: Text('48 months'),
                           ),
                         ),
                       )
