@@ -47,16 +47,19 @@ class _LoanFormState extends State<LoanForm> {
         } else {
           _loanAmountResult = 0;
           _loanPeriodResult = 0;
+          String errorMessage = result['errorMessage'].toString().toLowerCase();
 
           // Checking if the errorMessages are about age restrictions and if so, displaying the messages
-          String errorMessage = result['errorMessage'].toString().toLowerCase();
-          print("Error Message: $errorMessage");
-          if (errorMessage.contains("age_restriction:underage")){
+          if (errorMessage.contains("age_restriction:underage")) {
             _errorMessage = "You are underage. Loan application cannot be approved.";
           } else if (errorMessage.contains("age_restriction:overage")) {
             _errorMessage = "You are over the eligible age limit. Loan application cannot be approved.";
+          } else if (errorMessage.contains("invalid personal id code")) {
+            _errorMessage = "Invalid personal ID code! Please check your input.";
+          } else if (errorMessage.contains("no valid loan found")) {
+            _errorMessage = "No valid loan found! Please try adjusting amount or period.";
           } else {
-            _errorMessage = errorMessage;
+            _errorMessage = "An unexpected error occurred. Please try again.";
           }
         }
       });
@@ -188,10 +191,10 @@ class _LoanFormState extends State<LoanForm> {
           Column(
             children: [
               Text(
-                  'Approved Loan Amount: ${_loanAmountResult != 0 ? _loanAmountResult : "--"} €'),
+                  'Approved Loan Amount: ${_loanAmountResult > 0 ? _loanAmountResult : "--"} €'),
               const SizedBox(height: 8.0),
               Text(
-                  'Approved Loan Period: ${_loanPeriodResult != 0 ? _loanPeriodResult : "--"} months'),
+                  'Approved Loan Period: ${_loanPeriodResult > 0 ? _loanPeriodResult : "--"} months'),
               Visibility(
                   visible: _errorMessage != '',
                   child: Text(_errorMessage, style: errorMedium))
