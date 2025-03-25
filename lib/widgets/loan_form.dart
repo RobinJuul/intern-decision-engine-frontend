@@ -57,7 +57,12 @@ class _LoanFormState extends State<LoanForm> {
           } else if (errorMessage.contains("invalid personal id code")) {
             _errorMessage = "Invalid personal ID code! Please check your input.";
           } else if (errorMessage.contains("no valid loan found")) {
-            _errorMessage = "No valid loan found! Please try adjusting amount or period.";
+              if (errorMessage.contains("in debt") ){
+                _errorMessage = "No valid loan found! You are in debt.";
+              } else {
+                _errorMessage =
+                "No valid loan found! Please try adjusting amount or period.";
+              }
           } else {
             _errorMessage = "An unexpected error occurred. Please try again.";
           }
